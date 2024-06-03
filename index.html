@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Chat</title>
+</head>
+<body>
+<h1>Corporate Chat</h1>
+<div id="messages"></div>
+<input type="text" id="ipnInput" placeholder="Enter your IPN">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.onopen = function () {
+        console.log('WebSocket is open now.');
+        document.getElementById('messages').innerHTML += '<div>Connected to corporate chat</div>';
+    };
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        let message;
+        if (data.error) {
+            message = `<div>Error: ${data.error}</div>`;
+        } else {
+            message = `<div>Sugar: ${data.sugar} kg, Pulp: ${data.pulp} kg</div>`;
+        }
+        document.getElementById('messages').innerHTML += message;
+    };
+
+    socket.onclose = function () {
+        console.log('WebSocket is closed now.');
+        document.getElementById('messages').innerHTML += '<div>Disconnected from corporate chat</div>';
+    };
+
+    socket.onerror = function (error) {
+        console.error('WebSocket error:', error);
+        document.getElementById('messages').innerHTML += `<div>Error: ${error.message}</div>`;
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('ipnInput');
+        const ipn = input.value;
+        socket.send(ipn);
+        input.value = '';
+    }
+</script>
+</body>
+</html>
